@@ -1,0 +1,210 @@
+Project report
+
+Sweep line algorithm to detect line segment intersections
+
+For the description of the problem and the textual explanation of the
+algorithm, see the project plan.
+
+Implementation details:
+
+I used python to develop the algorithm and the developing environment was
+simply multi-window screen with vim. 
+
+The program has main module, that is used to run the program, it is called
+line_segment_intersections.py. It requires filename, from which to read the
+points and the choice of algorithm, either n for naive or s for sweep line as
+parameters. You can optionally provide filename to write the results to,
+otherwise the module will print them. The module reads the point file,
+initializes the priority queue and adds the points to it and gives them to the
+algorithm to calculate. In the naive case, it gives set of lines instead of
+points, because naive algorithm doesn't use any fancy data structures. After
+the calculation is done, it will tell how many intersection calculations were
+done, how much real time was consumed and how many intersections were found.
+And of course the intersection points themselves.
+
+The main algorithm file, sweep.py, has one main loop that removes points from
+the priority queue as long as there is points and handles the different cases
+for different types of points. The main calculations are delegated to the
+geometry and data_structure modules to keep the code clean and well
+modulated.
+
+There is similar file to sweep.py, naive_intersections.py, that has the naive,
+simple solution, that pretty much speaks for itself.
+
+The geometry.py module has the implementations of the only geometry shapes
+that we need for this algorithm, Point and Line. For Point we have few
+instance variables, x-coordinate, y-coordinate, the point type and the line
+that these points belong to. Last we have to intersecting lines, in case this
+is an intersection point, so we know which lines to switch in the neighbouring
+structure when we handle this point. We also override few functions to be able
+to use native python set structure and sort function.
+
+Line has the start point and end point, the slope of the line, the constant of
+the line and information if the line is vertical, as it is a special case and
+we can't calculate slope for vertical line. We also have array for the current
+intersecting lines, so we don't have to check them again if they are already
+checked. Interesting methods here are the one that tells us where the segment
+intersects the sweep line, it is done with basic line intersection math (we
+assume that the sweep line is not outside the line segments boundaries). 
+
+The intersects method tells if this line and other line intersect. The special
+case of vertical is handled first. In both the general and the special case,
+we first check that the lines are not paraller and then calculate the
+intersection point as if the lines were infinitely long. Then we check that
+the intersection point is in the bounding box of both line segments. This is
+how we know that the lines actually intersect. I know that there is more
+elegant ways to do this but I wanted to solve this by myself and not look
+readymade algorithms for this. I hope it is not completely foolish method. In
+the special case of two vertical lines we don't report any intersections
+points if the lines are in the same x-coordinate, thus having infinite amount
+of intersections points. This is done for clarity and the for the sake of the
+algorithm to actually recover from this situation.
+
+The data_structures.py module has the two data structures that we need for the
+algorithm, PriorityQueue and NeighbourList. PriorityQueue is implemented as a
+python list, but we keep it sorted so the pop operation can be done in
+constant time. Adding takes O(log(n)) time to keep the algorithm being better
+than the naive one. We use from of binary search to achieve this, we use it to
+look for the correct position in the list for the new element.
+
+NeighbourList is also implemented with python list and has three unsurpricing
+methods, add_line, remove_line and switch_neighbours. Each method returns the
+new neighbours that the operation introduced, so the main algorithm can check
+if there were new intersections. Add method checks in which y-coordinate the
+new line intersects the sweep line and adds it to the structure accordingly.
+Then it checks if any new neighbours were made. Remove line just locates the
+line and removes it, and does the neighbouring check. Switch lines locates
+both of the lines, changes their positions and reports the new neighbours.
+
+Then there is the tests.py that tests the code in unit test fashion. Nothing
+special there, tests for the special cases with the simple lineset that is
+approximately the same as test_lines2 (I don't know why I kept the test_lines
+all this time when I didn't use it).
+
+Lastly there is generate_lineset.py that can generate random linesets. It
+takes three parameters, the filename in which to write the generated lines,
+number of lines to be generated and the approximate length of the lines. The
+algorithm is just something I did on the fly without thinking too much, it
+first generates random starting point coordinates with one decimal place, we
+don't want too complicated decimal places and then calculates the end point
+randomly so that the length is at the worst case sqrt(2)*length that was
+given (I think). Vertical lines start from the top point, because the
+algorithm assumes so.
+
+User guide:
+
+As the source files are python they don't need any compilation. These were
+tested with python 2.6.7 but I think python 2.7.x works fine too. You can run
+the main module by typing 'python line_segment_intersections.py <filename of
+the line segment file> <algorithm type: s|n> <possible output filename>'. You
+can generate lines by typing 'python generate_lineset.py <filename of the
+output> <number of lines> <approximate lenght of the lines>. You can get usage
+instructions on both if you run them without any arguments.
+
+Example runs:
+
+kekkonen ~ % python line_segment_intersections.py test_lines2 s
+List of intersections:
+X: 0.25, Y: 1.25
+X: 0.25, Y: 1.5
+X: 0.25, Y: 1.75
+X: 0.5, Y: 1.5
+X: 1.0, Y: 1.0
+X: 1.0, Y: 2.0
+X: 1.25, Y: 2.25
+X: 1.5, Y: 1.5
+X: 1.75, Y: 1.75
+X: 2.0, Y: 1.5
+
+Found 10 intersections.
+Made 42 checks for intersections.
+The search took 0.0018949508667 seconds.
+
+kekkonen ~ % python line_segment_intersections.py test_lines2 n
+List of intersections:
+X: 0.25, Y: 1.25
+X: 0.25, Y: 1.5
+X: 0.25, Y: 1.75
+X: 0.5, Y: 1.5
+X: 1.0, Y: 1.0
+X: 1.0, Y: 2.0
+X: 1.25, Y: 2.25
+X: 1.5, Y: 1.5
+X: 1.75, Y: 1.75
+X: 2.0, Y: 1.5
+
+Found 10 intersections.
+Made 45 checks for intersections.
+The search took 0.00243091583252 seconds.
+
+kekkonen ~ % python generate_lineset.py random_lineset 5000 500
+(this does not produce any output)
+
+Analysis:
+
+I analysed few test runs and got following results from them:
+
+N = number of lines
+L = approximate length of each line
+Time S = Sweep line algorithm running time in seconds
+Time N = Naive algorithm running time in seconds
+Ratio = How much longer naive algorithm runs compared to sweep line
+
+(if there is multiple rows with same N and L different random lineset was
+used)
+
+N       L   Time S  Time N  Ratio
+100     1   0,011   0,032   2,9091
+100     1   0,009   0,032   3,5556
+100     1   0,009   0,031   3,4444
+100     20  0,021   0,056   2,6667
+100     20  0,026   0,056   2,1538
+100     20  0,023   0,054   2,3478
+100     50  0,111   0,151   1,3604
+100     50  0,08    0,125   1,5625
+100     50  0,057   0,105   1,8421
+1000    10  0,254   1,807   7,1142
+1000    10  0,241   1,966   8,1577
+1000    10  0,278   1,807   6,5000
+1000    200 1,915   8,73    4,5587
+1000    200 2,033   9,617   4,7304
+1000    200 1,871   8,96    4,7889
+1000    500 23,334  44,136  1,8915
+1000    500 22,817  43,483  1,9057
+1000    500 20,776  44,449  2,1394
+5000    50  0,789   29,616  37,5361
+5000    50  0,822   30,802  37,4720
+5000    50  0,584   32,271  55,2586
+5000    500 26,107  295,778 11,3295
+5000    500 26,981  288,374 10,6880
+5000    500 25,172  283,171 11,2494
+10000   500 29,912  660,135 22,0692
+
+From these we can see that the sweep line algorithm performs much better at
+sparse line sets and always better than the naive one. It is interesting that
+even the naive algorithm performs better when tere is fewer intersections, I
+think this has to do with the intersection checking algorithm that performs
+faster if the lines are far away (the first bounding box test fails and the
+second is not needed). Other results that have intersection checks are here:
+
+N       L       Intersections checked   N*log2(N) N^2
+100     15      327                     664       10000
+500     75      3236                    4482      250000
+1000    150     10728                   9965      1000000
+2500    375     55259                   28219     6250000
+5000    750     208729                  61438     25000000
+10000   1500    806877                  132877    100000000
+
+Here we can see that the naive checking is much worse than the actual checks
+that the sweep line algorithm makes. It is not exactly N*log2(N) but
+definately in the same ballpark, so I think it's safe to say thatO(N*log(N))
+efficiency was achieved.
+
+Other ramblings:
+
+This project was really nice, because as I have worked for three years in
+computer science and other projects usually involve some libraries or
+frameworks we have to use and some code others have written and some nasty
+legacy, this one I could start fresh and do without any external libraries or
+structures. I literally did this in a week coding few hours each day after
+work, it was fun :)
