@@ -14,7 +14,7 @@ priority queue implementation to optimize it!
 
 ## Documentation
 
-This course required very diligent documentation and a learning diary. At the
+This course required very diligent [documentation](/documentation/project_report.txt) and a [learning diary](/documentation/learning_diary.txt). At the
 time it was not very fun at all, but now when I am reading this later it is so
 good to see what I was thinking back then and how the project shaped up. I
 feel the documentation is quite good and there are no useless rambling.
