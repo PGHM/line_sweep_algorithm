@@ -19,6 +19,8 @@ time it was not very fun at all, but now when I am reading this later it is so
 good to see what I was thinking back then and how the project shaped up. I
 feel the documentation is quite good and there are no useless rambling.
 
+There are even usage instructions in every code file. I can still remember getting a fail for the documentation because the code was too hard to understand and run so I had to make everything crystal clear. The professor responsible for the grading did not know how to code very well...
+
 ## Running the code
 
 You just need Python 2.6 or 2.7 to run the code. Probably pretty easy to
